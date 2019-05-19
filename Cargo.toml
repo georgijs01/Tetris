@@ -1,0 +1,8 @@
+[package]
+name = "Tetris"
+version = "0.1.0"
+authors = ["georgijs01 <48869301+georgijs01@users.noreply.github.com>"]
+edition = "2018"
+
+[dependencies]
+amethyst = { git = "https://github.com/amethyst/amethyst" }
