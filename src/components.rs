@@ -1,8 +1,11 @@
 use amethyst::ecs::prelude::{Component, DenseVecStorage, NullStorage, VecStorage};
 use rand::Rng;
 use core::borrow::{BorrowMut, Borrow};
-use crate::systems::spawn::Tetrominoes;
+use crate::systems::spawn::Tetrominos;
+use std::time::Duration;
 
+
+/// Internal coordinate component used by the blocks to mark relative positions on the field
 pub struct Coordinates {
     pub x: i32,
     pub y: i32,
@@ -13,6 +16,8 @@ impl Component for Coordinates {
 }
 
 
+
+/// A flag that is set on the blocks that belong to the currently active Tetromino
 pub struct Falling;
 
 impl Component for Falling {
@@ -26,23 +31,95 @@ impl Default for Falling {
 }
 
 
-#[derive(Default)]
+/// Resource for keeping track of the position of the current rotation center
 pub struct RotationCenter {
     pub x: i32,
     pub y: i32,
+}
+
+impl Default for RotationCenter {
+    fn default() -> Self {
+        RotationCenter { x: 0, y: 0 }
+    }
 }
 
 /// Keeps track of the time since the last clear occurred so that the spawn system knows when to
 /// spawn the next entity.
 ///
 /// Is set by the gravity system and reset by the spawn system.
-pub struct Cleared {
-    pub field_cleared: bool,
+pub struct SpawnTimer {
+    time_since_clear: Duration,
+    spawn_threshold: Duration,
+    active: bool,
 }
 
-impl Default for Cleared {
+impl SpawnTimer {
+    pub fn add_time(&mut self, time: Duration) {
+        if self.active {
+            self.time_since_clear += time;
+        }
+    }
+
+    pub fn should_spawn(&self) -> bool {
+        self.time_since_clear > self.spawn_threshold && self.active
+    }
+
+    pub fn reset(&mut self) {
+        self.time_since_clear = Duration::new(0,0);
+        self.active = false;
+    }
+
+    pub fn activate(&mut self) {
+        self.active = true;
+    }
+}
+
+impl Default for SpawnTimer {
     fn default() -> Self {
-        Self {field_cleared: true}
+        // The default SpawnTimer will always trigger a spawn instantly
+        Self {
+            time_since_clear: Duration::from_secs(2),
+            spawn_threshold: Duration::from_secs(1),
+            active: true,
+        }
+    }
+}
+
+
+
+/// Keeps track of the time since the last time that gravity was applied
+/// Implements methods for reducing the time between gravity applications
+///
+/// Is both set and reset by the gravity system
+pub struct GravityTimer {
+    timer: Duration,
+    threshold: Duration,
+}
+
+impl GravityTimer {
+    pub fn add_time(&mut self, time: Duration) {
+        self.timer += time;
+    }
+
+    pub fn should_apply_gravity(&self) -> bool {
+        self.timer > self.threshold
+    }
+
+    pub fn reset(&mut self) {
+        self.timer = Duration::new(0, 0);
+    }
+
+    pub fn set_threshold(&mut self, time: Duration) {
+        self.threshold = time;
+    }
+}
+
+impl Default for GravityTimer {
+    fn default() -> Self {
+        Self {
+            timer: Duration::from_millis(0),
+            threshold: Duration::from_millis(500),
+        }
     }
 }
 
@@ -54,13 +131,13 @@ pub struct RandomStream {
 }
 
 impl RandomStream {
-    pub fn advance(&mut self) -> Tetrominoes {
+    pub fn advance(&mut self) -> Tetrominos {
         let last = self.next_nums.len() - 1;
         for i in 0..last - 1 {
             self.next_nums[i] = self.next_nums[i + 1];
         }
         self.next_nums[last] = rand::thread_rng().gen_range(0, self.high);
-        Tetrominoes::num_to_tetromino(self.next_nums[0])
+        Tetrominos::num_to_tetromino(self.next_nums[0])
     }
 }
 
