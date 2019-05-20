@@ -10,8 +10,6 @@ use amethyst::renderer::{DisplayConfig, DrawFlat2D, Event, Pipeline,
                          RenderBundle, Stage, VirtualKeyCode};
 use amethyst::utils::application_dir;
 
-use states::gameplay::GameplayState;
-
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
     let config_path = application_dir("resources/display_config.ron")?;

@@ -1,6 +1,5 @@
 use amethyst::ecs::prelude::{Component, DenseVecStorage, NullStorage, VecStorage};
 use rand::Rng;
-use std::sync::{Arc, Mutex};
 use core::borrow::{BorrowMut, Borrow};
 use crate::systems::spawn::Tetrominoes;
 
@@ -33,6 +32,10 @@ pub struct RotationCenter {
     pub y: i32,
 }
 
+/// Keeps track of the time since the last clear occurred so that the spawn system knows when to
+/// spawn the next entity.
+///
+/// Is set by the gravity system and reset by the spawn system.
 pub struct Cleared {
     pub field_cleared: bool,
 }
@@ -44,7 +47,7 @@ impl Default for Cleared {
 }
 
 
-// Keeps track of the current and upcoming pieces and generates the next pieces as they are needed
+/// Keeps track of the current and upcoming pieces and generates the next pieces as they are needed
 pub struct RandomStream {
     pub next_nums: Vec<u8>,
     high: u8
@@ -68,7 +71,7 @@ impl Default for RandomStream {
         let length = 4;
         let mut rng = rand::thread_rng();
         let mut initial_nums = vec![0 as u8; length];
-        for i in 0..length {
+        for _i in 0..length {
             let random_num: u8 = rng.gen_range(low, high);
             initial_nums.push(random_num);
         }
