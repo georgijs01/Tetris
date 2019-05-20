@@ -1,9 +1,10 @@
 use amethyst::{SimpleState, StateData, GameData};
 
-pub struct GameplayState;
+pub struct MenuState {
+}
 
-impl SimpleState for GameplayState {
+impl SimpleState for MenuState {
     fn on_start(&mut self, _data: StateData<GameData>) {
-        unimplemented!()
+
     }
 }

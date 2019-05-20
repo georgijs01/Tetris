@@ -5,6 +5,7 @@ name = "Tetris"
 version = "0.1.0"
 dependencies = [
  "amethyst 0.10.0 (git+https://github.com/amethyst/amethyst)",
+ "rand 0.5.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

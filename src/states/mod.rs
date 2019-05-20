@@ -1,2 +1,4 @@
-mod gameplay;
-mod pause;
+pub mod gameplay;
+pub mod pause;
+pub mod menu;
+pub mod load;
