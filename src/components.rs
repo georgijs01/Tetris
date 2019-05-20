@@ -18,15 +18,23 @@ impl Component for Coordinates {
 
 
 /// A flag that is set on the blocks that belong to the currently active Tetromino
-pub struct Falling;
-
-impl Component for Falling {
-    type Storage = NullStorage<Self>;
+pub struct Gravity {
+    pub enabled: bool,
 }
 
-impl Default for Falling {
+impl Gravity {
+    pub fn disable(&mut self) {
+        self.enabled = false;
+    }
+}
+
+impl Component for Gravity {
+    type Storage = VecStorage<Self>;
+}
+
+impl Default for Gravity {
     fn default() -> Self {
-        Falling
+        Gravity { enabled: true }
     }
 }
 
@@ -153,5 +161,18 @@ impl Default for RandomStream {
             initial_nums.push(random_num);
         }
         Self { next_nums: initial_nums, high }
+    }
+}
+
+
+pub struct LayoutConfig {
+    pub tile_size: i32,
+    pub stack_x: u32,
+    pub stack_y: u32,
+}
+
+impl Default for LayoutConfig {
+    fn default() -> Self {
+        LayoutConfig {tile_size: 32, stack_x: 0, stack_y: 0}
     }
 }

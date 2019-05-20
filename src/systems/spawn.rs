@@ -1,14 +1,14 @@
 use amethyst::core::Transform;
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage, Write, Entities};
 use amethyst::input::InputHandler;
-use crate::components::{Coordinates, SpawnTimer, RandomStream, RotationCenter, Falling};
+use crate::components::{Coordinates, SpawnTimer, RandomStream, RotationCenter, Gravity};
 
 pub struct SpawnSystem;
 
 impl<'a> System<'a> for SpawnSystem {
     type SystemData = (
         WriteStorage<'a, Coordinates>,
-        WriteStorage<'a, Falling>,
+        WriteStorage<'a, Gravity>,
         Write<'a, SpawnTimer>,
         Write<'a, RandomStream>,
         Write<'a, RotationCenter>,
