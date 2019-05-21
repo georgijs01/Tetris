@@ -1,10 +1,11 @@
+use core::borrow::{Borrow, BorrowMut};
+use std::time::Duration;
+
 use amethyst::ecs::prelude::{Component, DenseVecStorage, NullStorage, VecStorage};
 use amethyst::renderer::SpriteSheetHandle;
 use rand::Rng;
-use core::borrow::{BorrowMut, Borrow};
-use crate::systems::spawn::Tetrominos;
-use std::time::Duration;
 
+use crate::systems::spawn::Tetrominos;
 
 /// Internal coordinate component used by the blocks to mark relative positions on the field
 pub struct Coordinates {
@@ -141,12 +142,19 @@ pub struct RandomStream {
 
 impl RandomStream {
     pub fn advance(&mut self) -> Tetrominos {
+        let current = self.next_nums[0];
+
         let last = self.next_nums.len() - 1;
-        for i in 0..last - 1 {
+        for i in 0..last {
             self.next_nums[i] = self.next_nums[i + 1];
         }
-        self.next_nums[last] = rand::thread_rng().gen_range(0, self.high);
-        Tetrominos::num_to_tetromino(self.next_nums[0])
+
+        let mut next_num = rand::thread_rng().gen_range(0, self.high);
+        while next_num == self.next_nums[last - 1] {
+            next_num = rand::thread_rng().gen_range(0, self.high);
+        }
+        self.next_nums[last] = next_num;
+        Tetrominos::num_to_tetromino(current)
     }
 }
 
@@ -156,11 +164,19 @@ impl Default for RandomStream {
         let high = 7;
         let length = 4;
         let mut rng = rand::thread_rng();
-        let mut initial_nums = vec![0 as u8; length];
-        for _i in 0..length {
-            let random_num: u8 = rng.gen_range(low, high);
+        let mut initial_nums = Vec::new();
+        for i in 0..length {
+            let mut random_num: u8 = rng.gen_range(low, high);
+            if initial_nums.len() > 0 {
+                while initial_nums[i - 1] == random_num {
+                    random_num = rng.gen_range(low, high);
+                }
+            }
             initial_nums.push(random_num);
         }
+//        for num in &initial_nums {
+//            println!("{}", num);
+//        }
         Self { next_nums: initial_nums, high }
     }
 }

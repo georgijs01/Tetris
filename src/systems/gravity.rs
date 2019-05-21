@@ -1,7 +1,8 @@
-use amethyst::core::{Transform, timing::Time};
-use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage, Write, Entities};
+use amethyst::core::{timing::Time, Transform};
+use amethyst::ecs::{Entities, Join, Read, ReadStorage, System, Write, WriteStorage};
 use amethyst::input::InputHandler;
-use crate::components::{Coordinates, SpawnTimer, RandomStream, RotationCenter, GravityTimer, Gravity};
+
+use crate::components::{Coordinates, Gravity, GravityTimer, RandomStream, RotationCenter, SpawnTimer};
 
 pub struct GravitySystem;
 
@@ -58,9 +59,11 @@ impl<'a> System<'a> for GravitySystem {
 
         if allow_gravity {
             // Move all falling blocks down by one tile
-            for (falling_coords, _) in (&mut coordinates, &gravity_enabled).join() {
-                let new_y = falling_coords.y - 2;
-                falling_coords.y = new_y;
+            for (falling_coords, falling) in (&mut coordinates, &gravity_enabled).join() {
+                if falling.enabled {
+                    let new_y = falling_coords.y - 2;
+                    falling_coords.y = new_y;
+                }
             }
         } else {
             // Lock all falling blocks in place

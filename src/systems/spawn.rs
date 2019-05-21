@@ -1,8 +1,9 @@
 use amethyst::core::Transform;
-use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage, Write, Entities, ReadExpect};
+use amethyst::ecs::{Entities, Join, Read, ReadExpect, ReadStorage, System, Write, WriteStorage};
 use amethyst::input::InputHandler;
 use amethyst::renderer::{SpriteRender, SpriteSheetHandle};
-use crate::components::{Coordinates, SpawnTimer, RandomStream, RotationCenter, Gravity};
+
+use crate::components::{Coordinates, Gravity, RandomStream, RotationCenter, SpawnTimer};
 
 pub struct SpawnSystem;
 
@@ -33,9 +34,6 @@ impl<'a> System<'a> for SpawnSystem {
         if spawn_timer.should_spawn() {
 
             let next_piece = random_stream.advance();
-            let handle_clone = sprite_handle.clone();
-
-            let sprite = get_sprite_render(&next_piece, handle_clone);
 
             // Set the rotation center of the new piece
             let rotation_center_offset = get_rotation_center(&next_piece);
@@ -60,11 +58,11 @@ impl<'a> System<'a> for SpawnSystem {
                     .build_entity()
                     .with(pos, &mut coordinates)
                     .with(Gravity::default(), &mut falling)
-                    .with(sprite.clone(), &mut sprite_render)
+                    .with(get_sprite_render(
+                        &next_piece, &sprite_handle), &mut sprite_render)
+                    // TODO change this so that entities don't briefly flash up in the lower corner when they are created
                     .with(Transform::default(), &mut transform)
                     .build();
-
-                println!("built entity");
             }
 
             spawn_timer.reset();
@@ -73,7 +71,7 @@ impl<'a> System<'a> for SpawnSystem {
 }
 
 // The spawn point on the grid
-const SPAWN_POINT: (i32, i32) = (9, 41);
+const SPAWN_POINT: (i32, i32) = (8, 42);
 
 /// Returns a vector describing the positions of all the tetrominoe's blocks
 /// The position is relative to be the spawning block ((5, 21) in the standard case)
@@ -100,7 +98,7 @@ fn get_rotation_center(piece: &Tetrominos) -> (i32, i32) {
 
 
 /// Returns a SpriteRender component which corresponds to the correct tetromino
-fn get_sprite_render(piece: &Tetrominos, sprite_resource: SpriteSheetHandle) -> SpriteRender {
+fn get_sprite_render(piece: &Tetrominos, sprite_resource: &SpriteSheetHandle) -> SpriteRender {
     let sprite_number = match piece {
         Tetrominos::I => 0,
         Tetrominos::J => 1,
@@ -113,7 +111,7 @@ fn get_sprite_render(piece: &Tetrominos, sprite_resource: SpriteSheetHandle) -> 
     // TODO rework to accept all resources, not just the temporary version
     let sprite_number = 0;
     SpriteRender {
-        sprite_sheet: sprite_resource,
+        sprite_sheet: (*sprite_resource).clone(),
         sprite_number,
     }
 }
