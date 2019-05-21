@@ -1,6 +1,7 @@
 use amethyst::core::Transform;
-use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage, Write, Entities};
+use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage, Write, Entities, ReadExpect};
 use amethyst::input::InputHandler;
+use amethyst::renderer::{SpriteRender, SpriteSheetHandle};
 use crate::components::{Coordinates, SpawnTimer, RandomStream, RotationCenter, Gravity};
 
 pub struct SpawnSystem;
@@ -9,22 +10,32 @@ impl<'a> System<'a> for SpawnSystem {
     type SystemData = (
         WriteStorage<'a, Coordinates>,
         WriteStorage<'a, Gravity>,
+        WriteStorage<'a, SpriteRender>,
+        WriteStorage<'a, Transform>,
         Write<'a, SpawnTimer>,
         Write<'a, RandomStream>,
         Write<'a, RotationCenter>,
+        ReadExpect<'a, SpriteSheetHandle>,
         Entities<'a>,
     );
 
     fn run(&mut self, (
         mut coordinates,
         mut falling,
+        mut sprite_render,
+        mut transform,
         mut spawn_timer,
         mut random_stream,
         mut rotation_center,
+        sprite_handle,
         mut entities):
     Self::SystemData) {
         if spawn_timer.should_spawn() {
+
             let next_piece = random_stream.advance();
+            let handle_clone = sprite_handle.clone();
+
+            let sprite = get_sprite_render(&next_piece, handle_clone);
 
             // Set the rotation center of the new piece
             let rotation_center_offset = get_rotation_center(&next_piece);
@@ -36,20 +47,24 @@ impl<'a> System<'a> for SpawnSystem {
             let next_layout = get_layout(&next_piece);
             for (x_offset, y_offset) in next_layout {
                 next_coordinates
-                    .push(Coordinates{
+                    .push(Coordinates {
                         x: x_offset * 2 + SPAWN_POINT.0,
                         y: y_offset * 2 + SPAWN_POINT.1,
                     })
             }
+
 
             // Add the new blocks to the world
             for pos in next_coordinates {
                 entities
                     .build_entity()
                     .with(pos, &mut coordinates)
-                    .with(Default::default(), &mut falling)
-                    // TODO select the correct sprite for the block entity
+                    .with(Gravity::default(), &mut falling)
+                    .with(sprite.clone(), &mut sprite_render)
+                    .with(Transform::default(), &mut transform)
                     .build();
+
+                println!("built entity");
             }
 
             spawn_timer.reset();
@@ -80,6 +95,26 @@ fn get_rotation_center(piece: &Tetrominos) -> (i32, i32) {
         Tetrominos::I => (1, -1),
         Tetrominos::O => (1, 1),
         _ => (0, 0),
+    }
+}
+
+
+/// Returns a SpriteRender component which corresponds to the correct tetromino
+fn get_sprite_render(piece: &Tetrominos, sprite_resource: SpriteSheetHandle) -> SpriteRender {
+    let sprite_number = match piece {
+        Tetrominos::I => 0,
+        Tetrominos::J => 1,
+        Tetrominos::L => 2,
+        Tetrominos::O => 3,
+        Tetrominos::S => 4,
+        Tetrominos::T => 5,
+        Tetrominos::Z => 6,
+    };
+    // TODO rework to accept all resources, not just the temporary version
+    let sprite_number = 0;
+    SpriteRender {
+        sprite_sheet: sprite_resource,
+        sprite_number,
     }
 }
 

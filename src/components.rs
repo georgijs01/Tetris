@@ -1,4 +1,5 @@
 use amethyst::ecs::prelude::{Component, DenseVecStorage, NullStorage, VecStorage};
+use amethyst::renderer::SpriteSheetHandle;
 use rand::Rng;
 use core::borrow::{BorrowMut, Borrow};
 use crate::systems::spawn::Tetrominos;
@@ -56,9 +57,9 @@ impl Default for RotationCenter {
 ///
 /// Is set by the gravity system and reset by the spawn system.
 pub struct SpawnTimer {
-    time_since_clear: Duration,
-    spawn_threshold: Duration,
-    active: bool,
+    pub time_since_clear: Duration,
+    pub spawn_threshold: Duration,
+    pub active: bool,
 }
 
 impl SpawnTimer {
@@ -100,8 +101,8 @@ impl Default for SpawnTimer {
 ///
 /// Is both set and reset by the gravity system
 pub struct GravityTimer {
-    timer: Duration,
-    threshold: Duration,
+    pub timer: Duration,
+    pub threshold: Duration,
 }
 
 impl GravityTimer {
@@ -165,10 +166,14 @@ impl Default for RandomStream {
 }
 
 
+
+/// Keeps track of the configuration of the on-screen layout
+/// tile_size: the size in pixels of each block
+/// stack_x/y: position of the play-fields lower left corner relative to the window's lower left corner
 pub struct LayoutConfig {
     pub tile_size: i32,
-    pub stack_x: u32,
-    pub stack_y: u32,
+    pub stack_x: i32,
+    pub stack_y: i32,
 }
 
 impl Default for LayoutConfig {

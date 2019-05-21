@@ -28,6 +28,7 @@ impl<'a> System<'a> for GravitySystem {
         if !gravity_timer.should_apply_gravity() {
             return;
         }
+
         gravity_timer.reset();
         // Before moving the active blocks down, the system needs to check whether there is space
         // below. If not, the current blocks will be marked as inactive
@@ -37,7 +38,7 @@ impl<'a> System<'a> for GravitySystem {
             if !falling_outer.enabled {
                 continue;
             }
-            if falling_coords.x == 0 {
+            if falling_coords.y == 0 {
                 allow_gravity = false;
                 break;
             }
