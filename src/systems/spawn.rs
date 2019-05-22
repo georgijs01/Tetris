@@ -1,10 +1,14 @@
 use amethyst::core::Transform;
-use amethyst::ecs::{Entities, Join, ReadExpect, System, Write, WriteStorage};
+use amethyst::ecs::{Entities, Join, ReadExpect, Resources, System, SystemData, Write, WriteStorage};
 use amethyst::renderer::{SpriteRender, SpriteSheetHandle};
+use amethyst::shrev::{EventChannel, ReaderId};
 
 use crate::components::{Block, RandomStream, RotationCenter, SpawnTimer};
+use crate::systems::timing::UpdateEvent;
 
-pub struct SpawnSystem;
+pub struct SpawnSystem {
+    pub channel_reader: Option<ReaderId<UpdateEvent>>,
+}
 
 impl<'a> System<'a> for SpawnSystem {
     type SystemData = (
@@ -29,7 +33,6 @@ impl<'a> System<'a> for SpawnSystem {
         mut entities):
     Self::SystemData) {
         if spawn_timer.should_spawn() {
-
             let next_piece = random_stream.advance();
 
             // Set the rotation center of the new piece
@@ -62,6 +65,11 @@ impl<'a> System<'a> for SpawnSystem {
 
             spawn_timer.reset();
         }
+    }
+
+    fn setup(&mut self, res: &mut Resources) {
+        Self::SystemData::setup(res);
+        self.channel_reader = Some(res.fetch_mut::<EventChannel<UpdateEvent>>().register_reader());
     }
 }
 

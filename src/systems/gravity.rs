@@ -1,8 +1,12 @@
-use amethyst::ecs::{Join, System, Write, WriteStorage};
+use amethyst::ecs::{Join, System, SystemData, Write, WriteStorage};
+use amethyst::shrev::ReaderId;
 
 use crate::components::{Block, GravityTimer, RotationCenter, SpawnTimer};
+use crate::systems::timing::UpdateEvent;
 
-pub struct GravitySystem;
+pub struct GravitySystem {
+    pub channel_reader: Option<ReaderId<UpdateEvent>>,
+}
 
 impl<'a> System<'a> for GravitySystem {
     type SystemData = (
@@ -62,5 +66,10 @@ impl<'a> System<'a> for GravitySystem {
                 spawn_timer.activate();
             }
         }
+    }
+
+    fn setup(&mut self, res: &mut Resources) {
+        Self::SystemData::setup(res);
+        self.channel_reader = Some(res.fetch_mut::<EventChannel<UpdateEvent>>().register_reader());
     }
 }

@@ -16,8 +16,8 @@ impl<'a, 'b> SimpleState for GameplayState<'a, 'b> {
 
         let mut dispatcher_builder = DispatcherBuilder::new();
         dispatcher_builder.add(TimingSystem, "timing", &[]);
-        dispatcher_builder.add(GravitySystem, "gravity", &["timing"]);
-        dispatcher_builder.add(SpawnSystem, "spawn", &["timing"]);
+        dispatcher_builder.add(GravitySystem{channel_reader: None}, "gravity", &["timing"]);
+        dispatcher_builder.add(SpawnSystem{channel_reader: None}, "spawn", &["timing"]);
         dispatcher_builder.add(PositionUpdateSystem, "render_update", &[]);
 
         let mut dispatcher = dispatcher_builder.build();

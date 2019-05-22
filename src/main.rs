@@ -14,6 +14,7 @@ use states::load::LoadingState;
 pub mod components;
 pub mod systems;
 pub mod states;
+pub mod constants;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
@@ -39,7 +40,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)?;
 
     let mut game =
-        Application::new("./", LoadingState {progress_counter: ProgressCounter::new()}, game_data)?;
+        Application::new("./", LoadingState{progress_counter: ProgressCounter::new()}, game_data)?;
 
     game.run();
 
