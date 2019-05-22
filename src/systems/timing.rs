@@ -1,8 +1,8 @@
-use amethyst::core::{Transform, timing::Time};
-use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage, Write, Entities};
+use amethyst::core::{timing::Time, Transform};
+use amethyst::ecs::{Entities, Join, Read, ReadStorage, System, Write, WriteStorage};
 use amethyst::input::InputHandler;
-use crate::components::{Coordinates, SpawnTimer, RandomStream, RotationCenter, GravityTimer};
 
+use crate::components::{Block, GravityTimer, RandomStream, RotationCenter, SpawnTimer};
 
 /// A system to update the various timers that the game relies upon in one centralised system
 pub struct TimingSystem;

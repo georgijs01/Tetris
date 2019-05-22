@@ -2,76 +2,67 @@ use amethyst::core::{timing::Time, Transform};
 use amethyst::ecs::{Entities, Join, Read, ReadStorage, System, Write, WriteStorage};
 use amethyst::input::InputHandler;
 
-use crate::components::{Coordinates, Gravity, GravityTimer, RandomStream, RotationCenter, SpawnTimer};
+use crate::components::{Block, GravityTimer, RandomStream, RotationCenter, SpawnTimer};
 
 pub struct GravitySystem;
 
 impl<'a> System<'a> for GravitySystem {
     type SystemData = (
-        WriteStorage<'a, Coordinates>,
-        WriteStorage<'a, Gravity>,
-        Write<'a, RotationCenter>,
+        WriteStorage<'a, Block>,
         Write<'a, GravityTimer>,
         Write<'a, SpawnTimer>,
-        Entities<'a>,
+        Write<'a, RotationCenter>,
     );
 
     //noinspection ALL
     fn run(&mut self, (
-        mut coordinates,
-        mut gravity_enabled,
-        mut rotation_center,
+        mut blocks,
         mut gravity_timer,
         mut spawn_timer,
-        mut entities):
+        mut rotation_center):
     Self::SystemData) {
-        // Do nothing if the timer hasn't reached the threshold
-        if !gravity_timer.should_apply_gravity() {
-            return;
-        }
-
-        gravity_timer.reset();
-        // Before moving the active blocks down, the system needs to check whether there is space
-        // below. If not, the current blocks will be marked as inactive
-        let mut allow_gravity = true;
-        'falling: for (falling_coords, falling_outer) in (&coordinates, &gravity_enabled).join() {
-            //Check whether the bottom of the play field has been reached
-            if !falling_outer.enabled {
-                continue;
-            }
-            if falling_coords.y == 0 {
-                allow_gravity = false;
-                break;
-            }
-            for (stationary_coords, falling_inner) in (&coordinates, &gravity_enabled).join() {
-                if falling_inner.enabled {
+        // Only apply Gravity if the time threshold has been reached
+        if gravity_timer.should_apply_gravity() {
+            gravity_timer.reset();
+            // Before moving the active blocks down, the system needs to check whether there is space
+            // below. If not, the current blocks will be marked as inactive
+            let mut allow_gravity = true;
+            'falling: for block in (&blocks).join() {
+                if !block.falling {
                     continue;
                 }
-                // Check whether the block is directly beneath the falling block
-                if falling_coords.x == stationary_coords.x
-                    // NOTE: -2 is a shift ONE block down in coordinate space
-                    && falling_coords.y - 2 == stationary_coords.y {
+                //Check whether the bottom of the play field has been reached
+                if block.y == 0 {
                     allow_gravity = false;
-                    break 'falling;
+                    break;
+                }
+                for other_block in (&blocks).join() {
+                    // Check whether the block is directly beneath the falling block and disabled
+                    if !other_block.falling && block.x == other_block.x
+                        // NOTE: -2 is a shift ONE block down in coordinate space
+                        && block.y - 2 == other_block.y {
+                        allow_gravity = false;
+                        break 'falling;
+                    }
                 }
             }
-        }
 
-        if allow_gravity {
-            // Move all falling blocks down by one tile
-            for (falling_coords, falling) in (&mut coordinates, &gravity_enabled).join() {
-                if falling.enabled {
-                    let new_y = falling_coords.y - 2;
-                    falling_coords.y = new_y;
+            if allow_gravity {
+                // Move all falling blocks down by one tile
+                for block in (&mut blocks).join() {
+                    if block.falling {
+                        block.y -= 2;
+                    }
                 }
+                rotation_center.y -= 2;
+            } else {
+                // Lock all falling blocks in place
+                for block in (&mut blocks).join() {
+                    block.falling = false;
+                }
+                // Activate the spawn timer so that a new piece will appear
+                spawn_timer.activate();
             }
-        } else {
-            // Lock all falling blocks in place
-            for falling_flag in (&mut gravity_enabled).join() {
-                falling_flag.disable();
-            }
-            // Activate the spawn timer so that a new piece will appear
-            spawn_timer.activate();
         }
     }
 }

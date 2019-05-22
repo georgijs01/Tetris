@@ -3,14 +3,13 @@ use amethyst::ecs::{Entities, Join, Read, ReadExpect, ReadStorage, System, Write
 use amethyst::input::InputHandler;
 use amethyst::renderer::{SpriteRender, SpriteSheetHandle};
 
-use crate::components::{Coordinates, Gravity, RandomStream, RotationCenter, SpawnTimer};
+use crate::components::{Block, RandomStream, RotationCenter, SpawnTimer};
 
 pub struct SpawnSystem;
 
 impl<'a> System<'a> for SpawnSystem {
     type SystemData = (
-        WriteStorage<'a, Coordinates>,
-        WriteStorage<'a, Gravity>,
+        WriteStorage<'a, Block>,
         WriteStorage<'a, SpriteRender>,
         WriteStorage<'a, Transform>,
         Write<'a, SpawnTimer>,
@@ -21,8 +20,7 @@ impl<'a> System<'a> for SpawnSystem {
     );
 
     fn run(&mut self, (
-        mut coordinates,
-        mut falling,
+        mut blocks,
         mut sprite_render,
         mut transform,
         mut spawn_timer,
@@ -45,23 +43,21 @@ impl<'a> System<'a> for SpawnSystem {
             let next_layout = get_layout(&next_piece);
             for (x_offset, y_offset) in next_layout {
                 next_coordinates
-                    .push(Coordinates {
+                    .push(Block {
                         x: x_offset * 2 + SPAWN_POINT.0,
                         y: y_offset * 2 + SPAWN_POINT.1,
+                        falling: true,
+                        initialized: false,
                     })
             }
-
 
             // Add the new blocks to the world
             for pos in next_coordinates {
                 entities
                     .build_entity()
-                    .with(pos, &mut coordinates)
-                    .with(Gravity::default(), &mut falling)
+                    .with(pos, &mut blocks)
                     .with(get_sprite_render(
                         &next_piece, &sprite_handle), &mut sprite_render)
-                    // TODO change this so that entities don't briefly flash up in the lower corner when they are created
-                    .with(Transform::default(), &mut transform)
                     .build();
             }
 

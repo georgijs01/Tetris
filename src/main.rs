@@ -1,21 +1,23 @@
 extern crate amethyst;
 extern crate rand;
 
-pub mod components;
-pub mod systems;
-pub mod states;
-
-use amethyst::prelude::*;
 use amethyst::core::transform::TransformBundle;
+use amethyst::input::InputBundle;
+use amethyst::prelude::*;
 use amethyst::renderer::{DisplayConfig, DrawFlat2D, Event, Pipeline,
                          RenderBundle, Stage, VirtualKeyCode};
 use amethyst::utils::application_dir;
+
+pub mod components;
+pub mod systems;
+pub mod states;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
     let config_path = application_dir("resources/display_config.ron")?;
     let display_config = DisplayConfig::load(&config_path);
 
+    let binding_path = application_dir("resources/binding_config.ron")?;
 
     let render_pipe = Pipeline::build().
         with_stage(
@@ -24,12 +26,14 @@ fn main() -> amethyst::Result<()> {
                 .with_pass(DrawFlat2D::new()),
         );
 
+    let input_bundle = InputBundle::<String, String>::new()
+        .with_bindings_from_file(binding_path)?;
+
     let game_data = GameDataBuilder::default()
-        .with_bundle(
-            RenderBundle::new(render_pipe, Some(display_config))
-                .with_sprite_sheet_processor()
-        )?
+        .with_bundle(RenderBundle::new(render_pipe, Some(display_config))
+                .with_sprite_sheet_processor())?
         .with_bundle(TransformBundle::new())?
+        .with_bundle(input_bundle)?
         .with(systems::timing::TimingSystem, "timing", &[])
         .with(systems::gravity::GravitySystem, "gravity", &["timing"])
         .with(systems::pos_update::PositionUpdateSystem, "pos_update", &[])

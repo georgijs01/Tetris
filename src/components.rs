@@ -8,36 +8,15 @@ use rand::Rng;
 use crate::systems::spawn::Tetrominos;
 
 /// Internal coordinate component used by the blocks to mark relative positions on the field
-pub struct Coordinates {
+pub struct Block {
     pub x: i32,
     pub y: i32,
+    pub falling: bool,
+    pub initialized: bool,
 }
 
-impl Component for Coordinates {
+impl Component for Block {
     type Storage = DenseVecStorage<Self>;
-}
-
-
-
-/// A flag that is set on the blocks that belong to the currently active Tetromino
-pub struct Gravity {
-    pub enabled: bool,
-}
-
-impl Gravity {
-    pub fn disable(&mut self) {
-        self.enabled = false;
-    }
-}
-
-impl Component for Gravity {
-    type Storage = VecStorage<Self>;
-}
-
-impl Default for Gravity {
-    fn default() -> Self {
-        Gravity { enabled: true }
-    }
 }
 
 
