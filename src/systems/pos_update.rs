@@ -1,6 +1,5 @@
 use amethyst::core::Transform;
-use amethyst::ecs::{Entities, Join, Read, ReadStorage, System, Write, WriteStorage};
-use amethyst::input::InputHandler;
+use amethyst::ecs::{Entities, Join, Read, System, WriteStorage};
 
 use crate::components::{Block, GravityTimer, LayoutConfig, RandomStream, RotationCenter, SpawnTimer};
 

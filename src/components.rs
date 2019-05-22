@@ -1,8 +1,6 @@
-use core::borrow::{Borrow, BorrowMut};
 use std::time::Duration;
 
-use amethyst::ecs::prelude::{Component, DenseVecStorage, NullStorage, VecStorage};
-use amethyst::renderer::SpriteSheetHandle;
+use amethyst::ecs::prelude::{Component, DenseVecStorage};
 use rand::Rng;
 
 use crate::systems::spawn::Tetrominos;

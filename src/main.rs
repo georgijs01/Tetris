@@ -1,12 +1,15 @@
 extern crate amethyst;
 extern crate rand;
 
+use amethyst::assets::ProgressCounter;
 use amethyst::core::transform::TransformBundle;
 use amethyst::input::InputBundle;
 use amethyst::prelude::*;
-use amethyst::renderer::{DisplayConfig, DrawFlat2D, Event, Pipeline,
-                         RenderBundle, Stage, VirtualKeyCode};
+use amethyst::renderer::{DisplayConfig, DrawFlat2D, Pipeline,
+                         RenderBundle, Stage};
 use amethyst::utils::application_dir;
+
+use states::load::LoadingState;
 
 pub mod components;
 pub mod systems;
@@ -33,14 +36,10 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(RenderBundle::new(render_pipe, Some(display_config))
                 .with_sprite_sheet_processor())?
         .with_bundle(TransformBundle::new())?
-        .with_bundle(input_bundle)?
-        .with(systems::timing::TimingSystem, "timing", &[])
-        .with(systems::gravity::GravitySystem, "gravity", &["timing"])
-        .with(systems::pos_update::PositionUpdateSystem, "pos_update", &[])
-        .with(systems::spawn::SpawnSystem, "spawn", &["timing"]);
+        .with_bundle(input_bundle)?;
 
     let mut game =
-        Application::new("./", states::load::LoadingState{}, game_data)?;
+        Application::new("./", LoadingState {progress_counter: ProgressCounter::new()}, game_data)?;
 
     game.run();
 

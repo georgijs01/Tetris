@@ -14,9 +14,20 @@ impl<'a> System<'a> for TimingSystem {
         Read<'a, Time>,
     );
 
-    fn run(&mut self, (mut gravity_timer, mut spawn_timer, time): Self::SystemData) {
+    fn run(&mut self, (
+        mut gravity_timer,
+        mut spawn_timer,
+        time
+    ): Self::SystemData) {
         let time_delta = time.delta_time();
         gravity_timer.add_time(time_delta);
         spawn_timer.add_time(time_delta);
     }
+}
+
+
+// Events consumed by the spawn and gravity systems
+pub enum UpdateEvent {
+    SPAWN,
+    GRAVITY,
 }

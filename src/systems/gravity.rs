@@ -1,8 +1,6 @@
-use amethyst::core::{timing::Time, Transform};
-use amethyst::ecs::{Entities, Join, Read, ReadStorage, System, Write, WriteStorage};
-use amethyst::input::InputHandler;
+use amethyst::ecs::{Join, System, Write, WriteStorage};
 
-use crate::components::{Block, GravityTimer, RandomStream, RotationCenter, SpawnTimer};
+use crate::components::{Block, GravityTimer, RotationCenter, SpawnTimer};
 
 pub struct GravitySystem;
 
@@ -19,8 +17,8 @@ impl<'a> System<'a> for GravitySystem {
         mut blocks,
         mut gravity_timer,
         mut spawn_timer,
-        mut rotation_center):
-    Self::SystemData) {
+        mut rotation_center
+    ): Self::SystemData) {
         // Only apply Gravity if the time threshold has been reached
         if gravity_timer.should_apply_gravity() {
             gravity_timer.reset();
