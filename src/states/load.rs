@@ -8,18 +8,18 @@ use amethyst::renderer::{
 };
 use amethyst::shrev::EventChannel;
 
+use crate::constants::{VIEW_HEIGHT, VIEW_WIDTH};
 use crate::states::gameplay::GameplayState;
 use crate::systems::key_update::KeyEvent;
-use crate::systems::timing::UpdateEvent;
-
-//use crate::components::SpriteResource;
-
-pub const VIEW_WIDTH: f32 = 320.;
-pub const VIEW_HEIGHT: f32 = 640.;
-
 
 pub struct LoadingState {
     pub progress_counter: ProgressCounter,
+}
+
+impl LoadingState {
+    pub fn new() -> LoadingState {
+        LoadingState {progress_counter: ProgressCounter::new()}
+    }
 }
 
 impl SimpleState for LoadingState {
@@ -53,12 +53,11 @@ impl SimpleState for LoadingState {
 
         // initialize event channels
         data.world.add_resource(EventChannel::<KeyEvent>::new());
-        data.world.add_resource(EventChannel::<UpdateEvent>::new());
     }
 
     fn update(&mut self, _data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
         if self.progress_counter.is_complete() {
-            Trans::Switch(Box::new(GameplayState{dispatcher: None}))
+            Trans::Switch(Box::new(GameplayState::new()))
         } else {
             Trans::None
         }

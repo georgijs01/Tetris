@@ -4,11 +4,9 @@ use amethyst::renderer::{SpriteRender, SpriteSheetHandle};
 use amethyst::shrev::{EventChannel, ReaderId};
 
 use crate::components::{Block, RandomStream, RotationCenter, SpawnTimer};
-use crate::systems::timing::UpdateEvent;
+use crate::constants::SPAWN_POINT;
 
-pub struct SpawnSystem {
-    pub channel_reader: Option<ReaderId<UpdateEvent>>,
-}
+pub struct SpawnSystem;
 
 impl<'a> System<'a> for SpawnSystem {
     type SystemData = (
@@ -50,6 +48,8 @@ impl<'a> System<'a> for SpawnSystem {
                         y: y_offset * 2 + SPAWN_POINT.1,
                         falling: true,
                         initialized: false,
+                        rotation: 0,
+                        piece: copy_tetromino(&next_piece),
                     })
             }
 
@@ -66,15 +66,8 @@ impl<'a> System<'a> for SpawnSystem {
             spawn_timer.reset();
         }
     }
-
-    fn setup(&mut self, res: &mut Resources) {
-        Self::SystemData::setup(res);
-        self.channel_reader = Some(res.fetch_mut::<EventChannel<UpdateEvent>>().register_reader());
-    }
 }
 
-// The spawn point on the grid
-const SPAWN_POINT: (i32, i32) = (8, 42);
 
 /// Returns a vector describing the positions of all the tetrominoe's blocks
 /// The position is relative to be the spawning block ((5, 21) in the standard case)
@@ -127,6 +120,18 @@ pub enum Tetrominos {
     S,
     T,
     Z,
+}
+
+fn copy_tetromino(piece: &Tetrominos) -> Tetrominos {
+    match piece {
+        Tetrominos::I => Tetrominos::I,
+        Tetrominos::J => Tetrominos::J,
+        Tetrominos::L => Tetrominos::L,
+        Tetrominos::O => Tetrominos::O,
+        Tetrominos::S => Tetrominos::S,
+        Tetrominos::T => Tetrominos::T,
+        Tetrominos::Z => Tetrominos::Z,
+    }
 }
 
 impl Tetrominos {

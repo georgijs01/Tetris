@@ -11,6 +11,8 @@ pub struct Block {
     pub y: i32,
     pub falling: bool,
     pub initialized: bool,
+    pub rotation: i32,
+    pub piece: Tetrominos,
 }
 
 impl Component for Block {

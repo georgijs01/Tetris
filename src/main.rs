@@ -11,6 +11,8 @@ use amethyst::utils::application_dir;
 
 use states::load::LoadingState;
 
+use crate::systems::key_update::KeyEvent;
+
 pub mod components;
 pub mod systems;
 pub mod states;
@@ -40,7 +42,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)?;
 
     let mut game =
-        Application::new("./", LoadingState{progress_counter: ProgressCounter::new()}, game_data)?;
+        Application::new("./", LoadingState::new(), game_data)?;
 
     game.run();
 
